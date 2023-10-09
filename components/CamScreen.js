@@ -8,15 +8,32 @@ import {
   StyleSheet,
 } from "react-native";
 // import { Text, View,} from "react-native-web";
-import { Camera } from 'expo-camera';   //Expo cam || RNC (REACT)
-import * as Location from '@react-native-community/geolocation'; //metadata/location data
-// import * as SQLite from 'react-native-sqlite-storage';
+import { Camera } from "expo-camera"; //Expo cam || RNC (REACT)
+import * as Location from "@react-native-community/geolocation"; //metadata/location data
+import * as SQLite from "expo-sqlite";
+
+// using expo sqlite
+const db = SQLite.openDatabase("images.db"); // SQlite from expo
+  
+const setupDatabase = () => {
+  db.transaction((tx) => {
+    tx.executeSql(
+      'CREATE TABLE IF NOT EXISTS images (id INTEGER PRIMARY KEY AUTOINCREMENT, uri TEXT, latitude REAL, longitude REAL)',
+      [],
+      () => console.log('Table created!'),
+      (_, error) => console.error('failed to create table! Error:', error)
+    );
+  });
+};
 
 const CamScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
 
   useEffect(() => {
+    // initializeed db whne components mounts
+    setupDatabase();
+
     (async () => {
       const { status } = await Camera.requestPermissionsAsync();
       setHasPermission(status === "granted");
@@ -29,6 +46,8 @@ const CamScreen = () => {
       console.log("Photo URI:", photo.uri);
 
       // Save the image URI and coordinate data to SQLite
+      captureLocation();
+      
       db.transaction((tx) => {
         tx.executeSql(
           "INSERT INTO images (uri, latitude, longitude) VALUES (?, ?, ?)",
@@ -39,15 +58,13 @@ const CamScreen = () => {
       });
     }
   };
-// handl permission to access user device features
+  // handl permission to access user device features
   if (hasPermission === null) {
-    return <View />;      //render view from cam perspective
+    return <View />; //render view from cam perspective
   }
   if (hasPermission === false) {
     return console.log("App is using your Cam");
   }
-
-
 
   return (
     <View style={{ flex: 1 }}>

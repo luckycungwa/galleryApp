@@ -13,8 +13,8 @@ export default function App() {
       <Text>DEFAULT SCREEN!</Text>
       <StatusBar style="auto" />
       <View>
-        {/* <CamScreen/> */}
-        <GalleryScreen/>  
+        <CamScreen/>
+        {/* <GalleryScreen/>   */}
       </View>
     </View>
   );

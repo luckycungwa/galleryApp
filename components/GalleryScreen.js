@@ -15,19 +15,32 @@ const images = [
 const numColumns = 3; // Grid columns
 
 const GalleryScreen = () => {
-  const renderItem = ({ item }) => (
-    <Image source={item.source} style={styles.image} />
-  );
+  const [images, setImages] = useState([]);
+
+  useEffect(() => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        'SELECT * FROM images',
+        [],
+        (_, { rows: { _array } }) => {
+          setImages(_array); //set images from db
+        },
+        (_, error) => console.error('Error fetching images:', error)
+      );
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
       <FlatList
-        style={styles.galleryView}
-        data={images.sort((a, b) => a.id - b.id)} //Sort images by id in ascending order
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={numColumns}
-      />
+  style={styles.galleryView}
+  data={images}
+  renderItem={({ item }) => (
+    <Image source={{ uri: item.uri }} style={styles.image} />
+  )}
+  keyExtractor={(item) => item.id.toString()}
+  numColumns={numColumns}
+/>
     </View>
   );
 };
